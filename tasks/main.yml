@@ -1,0 +1,48 @@
+---
+- name: Check if memcached extension installed
+  command: 'php -m'
+  register: php_modules
+  changed_when: false
+  ignore_errors: true
+
+- name: Install igbinary extension
+  command: '{{ php_pecl_executable }} install igbinary-{{ php_igbinary_version }}'
+  when: "'igbinary' not in php_modules.stdout"
+
+- name: Add igbinary extension configuration file
+  copy:
+    src: 'files/igbinary.ini'
+    dest: '/etc/php.d/40-igbinary.ini'
+  notify: restart php-fpm
+
+- name: Delete any existing memcached extension install files
+  file:
+    path: '/tmp/memcached-{{ php_memcached_version }}'
+    state: absent
+  when: "'memcached' not in php_modules.stdout"
+
+- name: Download memcached extension
+  command: '{{ php_pecl_executable }} download memcached-{{ php_memcached_version }}'
+  args:
+    chdir: '/tmp'
+  when: "'memcached' not in php_modules.stdout"
+
+- name: Unarchive memcached extension
+  unarchive:
+    src: '/tmp/memcached-{{ php_memcached_version }}.tgz'
+    dest: '/tmp'
+    remote_src: yes
+  when: "'memcached' not in php_modules.stdout"
+
+- name: Install memcached extension
+  command: 'phpize && ./configure --enable-memcached-igbinary && make && make install'
+  args:
+    chdir: '/tmp/memcached-{{ php_memcached_version }}'
+  notify: restart php-fpm
+  when: "'memcached' not in php_modules.stdout"
+
+- name: Add memcached extension configuration file
+  copy:
+    src: 'files/memcached.ini'
+    dest: '/etc/php.d/50-memcached.ini'
+  notify: restart php-fpm

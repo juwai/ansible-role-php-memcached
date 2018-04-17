@@ -1,0 +1,11 @@
+---
+- hosts: default
+  remote_user: vagrant
+  become: yes
+  vars:
+    php_packages:
+    - 'php'
+    - 'php-devel'
+    - 'php-pear'
+  roles:
+    - 'php-memcached'
