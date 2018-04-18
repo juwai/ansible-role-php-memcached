@@ -34,7 +34,8 @@ Default is `pecl`.
 Dependencies
 ------------
 
-geerlingguy.php
+- juwai.common
+- geerlingguy.php
 
 Example Playbook
 ----------------

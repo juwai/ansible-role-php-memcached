@@ -4,8 +4,12 @@
   become: yes
   vars:
     php_packages:
-    - 'php'
-    - 'php-devel'
-    - 'php-pear'
+      - 'php71w'
+      - 'php71w-devel'
+      - 'php71w-pear'
+    php_webserver_daemon: 'crond'
+    system_packages:
+      - 'libmemcached10'
+      - 'libmemcached10-devel'
   roles:
     - 'php-memcached'

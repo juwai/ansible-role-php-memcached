@@ -10,4 +10,5 @@ galaxy_info:
     - 6
   galaxy_tags: [amazon, centos6, php, memcached]
 dependencies:
+  - { role: juwai.common }
   - { role: geerlingguy.php }
