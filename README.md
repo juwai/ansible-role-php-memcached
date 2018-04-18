@@ -6,7 +6,7 @@ Install memcached extension for PHP with igbinary support.
 Requirements
 ------------
 
-Written in Ansible 2.3.*
+Written in Ansible 2.3.*. PECL must be installed.
 
 Role Variables
 --------------
