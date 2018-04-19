@@ -1,0 +1,75 @@
+---
+- name: Check if memcached extension installed
+  command: 'php -m'
+  register: php_modules
+  changed_when: false
+  ignore_errors: true
+
+- name: Check if igbinary extension installed
+  command: '{{ php_pecl_executable }} list'
+  register: pecl_modules
+  changed_when: false
+  ignore_errors: true
+
+- name: Install igbinary extension
+  command: '{{ php_pecl_executable }} install igbinary-{{ php_igbinary_version }}'
+  when: "'igbinary' not in pecl_modules.stdout"
+
+- name: Add igbinary extension configuration file
+  copy:
+    src: 'files/igbinary.ini'
+    dest: '/etc/php.d/40-igbinary.ini'
+  notify: restart php-fpm
+
+- name: Delete any existing memcached extension install files
+  file:
+    path: '/tmp/memcached-{{ php_memcached_version }}'
+    state: absent
+  when: "'memcached' not in php_modules.stdout"
+
+- name: Download memcached extension
+  command: '{{ php_pecl_executable }} download memcached-{{ php_memcached_version }}'
+  args:
+    chdir: '/tmp'
+  when: "'memcached' not in php_modules.stdout"
+
+- name: Unarchive memcached extension
+  unarchive:
+    src: '/tmp/memcached-{{ php_memcached_version }}.tgz'
+    dest: '/tmp'
+    remote_src: yes
+  when: "'memcached' not in php_modules.stdout"
+
+- name: Phpize memcached extension
+  command: 'phpize'
+  register: memcached_extension_phpize
+  args:
+    chdir: '/tmp/memcached-{{ php_memcached_version }}'
+  when: "'memcached' not in php_modules.stdout"
+
+- name: Configure memcached extension
+  command: './configure --enable-memcached-igbinary'
+  register: memcached_extension_configure
+  args:
+    chdir: '/tmp/memcached-{{ php_memcached_version }}'
+  when: memcached_extension_phpize.changed
+
+- name: Compile memcached extension
+  command: 'make'
+  register: memcached_extension_make
+  args:
+    chdir: '/tmp/memcached-{{ php_memcached_version }}'
+  when: memcached_extension_configure.changed
+
+- name: Install memcached extension
+  command: 'make install'
+  args:
+    chdir: '/tmp/memcached-{{ php_memcached_version }}'
+  notify: restart php-fpm
+  when: memcached_extension_make.changed
+
+- name: Add memcached extension configuration file
+  copy:
+    src: 'files/memcached.ini'
+    dest: '/etc/php.d/50-memcached.ini'
+  notify: restart php-fpm
