@@ -17,13 +17,13 @@ Available variables are listed below, along with default values (see `defaults/m
 
 The version of igbinary to install.
 
-Default is `2.0.5`.
+Default is `3.0.1`.
 
 ### php_memcached_version
 
 The version of memcached extension to install.
 
-Default is `3.0.4`.
+Default is `3.1.4`.
 
 ### php_pecl_executable
 
